@@ -1,0 +1,12 @@
+replicaCount: 2
+
+image:
+  tag: "v1.0.0"
+
+env:
+  SPRING_PROFILES_ACTIVE: "prod"
+  EUREKA_SERVER: "http://eureka-server:8761/eureka"
+
+secrets:
+  JWT_SECRET: "CHANGE_ME_PROD_JWT_SECRET"
+

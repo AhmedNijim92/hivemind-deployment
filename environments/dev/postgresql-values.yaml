@@ -1,0 +1,16 @@
+# Bitnami PostgreSQL chart overrides for dev
+auth:
+  postgresPassword: "dev-postgres-password"
+  database: "media_db"
+
+primary:
+  persistence:
+    enabled: true
+    size: 4Gi
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "250m"

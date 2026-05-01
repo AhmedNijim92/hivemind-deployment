@@ -1,0 +1,11 @@
+replicaCount: 1
+
+image:
+  tag: "latest"
+
+env:
+  SPRING_PROFILES_ACTIVE: "dev"
+  EUREKA_SERVER: "http://eureka-server:8761/eureka"
+
+secrets:
+  JWT_SECRET: "dev-jwt-secret-change-in-prod-min-32-chars"

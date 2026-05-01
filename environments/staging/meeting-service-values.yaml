@@ -1,0 +1,15 @@
+replicaCount: 1
+
+image:
+  tag: "latest"
+
+env:
+  SPRING_PROFILES_ACTIVE: "staging"
+  EUREKA_SERVER: "http://eureka-server:8761/eureka"
+  CASSANDRA_HOST: "cassandra"
+  CASSANDRA_PORT: "9042"
+  CASSANDRA_DATACENTER: "datacenter1"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+

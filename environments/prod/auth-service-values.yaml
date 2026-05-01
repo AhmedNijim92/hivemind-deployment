@@ -1,0 +1,27 @@
+replicaCount: 2
+
+image:
+  tag: "v1.0.0"
+
+env:
+  SPRING_PROFILES_ACTIVE: "prod"
+  EUREKA_SERVER: "http://eureka-server:8761/eureka"
+  CASSANDRA_HOST: "cassandra"
+  CASSANDRA_PORT: "9042"
+  CASSANDRA_DATACENTER: "datacenter1"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+
+secrets:
+  JWT_SECRET: "CHANGE_ME_PROD_JWT_SECRET"
+  TWILIO_ACCOUNT_SID: "CHANGE_ME_TWILIO_SID"
+  TWILIO_AUTH_TOKEN: "CHANGE_ME_TWILIO_TOKEN"
+  TWILIO_PHONE_NUMBER: "CHANGE_ME_TWILIO_PHONE"
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
+

@@ -1,0 +1,12 @@
+auth:
+  postgresPassword: "CHANGE_ME_DB_PASSWORD"
+  database: "media_db"
+
+primary:
+  persistence:
+    enabled: true
+    size: 50Gi
+    storageClass: fast-ssd
+
+readReplicas:
+  replicaCount: 1

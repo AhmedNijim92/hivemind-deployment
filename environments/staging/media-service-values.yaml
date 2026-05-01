@@ -1,0 +1,17 @@
+replicaCount: 1
+
+image:
+  tag: "latest"
+
+env:
+  SPRING_PROFILES_ACTIVE: "staging"
+  EUREKA_SERVER: "http://eureka-server:8761/eureka"
+  DB_USERNAME: "postgres"
+  AWS_REGION: "us-east-1"
+  S3_BUCKET: "hivemind-media-staging"
+
+secrets:
+  DB_PASSWORD: "staging-postgres-password"
+  AWS_ACCESS_KEY: "staging-aws-key"
+  AWS_SECRET_KEY: "staging-aws-secret"
+

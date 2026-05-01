@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: hivemind/frontend
+  tag: latest
+
+env:
+  NEXT_PUBLIC_API_URL: "http://api-gateway:8080"
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false

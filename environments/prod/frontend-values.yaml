@@ -1,0 +1,31 @@
+replicaCount: 3
+
+image:
+  repository: hivemind/frontend
+  tag: stable
+
+env:
+  NEXT_PUBLIC_API_URL: "https://api.hivemind.example.com"
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: hivemind.example.com
+      paths:
+        - path: /
+          pathType: Prefix

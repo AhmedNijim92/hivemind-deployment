@@ -1,0 +1,5 @@
+apiVersion: v2
+name: config-server
+description: HiveMind Centralized Config Server - Spring Cloud Config
+version: 1.0.0
+appVersion: "1.0.0"

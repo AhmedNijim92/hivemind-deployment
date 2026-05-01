@@ -1,0 +1,92 @@
+releases:
+  - name: auth-service
+    namespace: hivemind
+    chart: ../charts/auth-service
+    values:
+      - ../environments/{{ .Environment.Name }}/auth-service-values.yaml
+    needs:
+      - hivemind/cassandra
+      - hivemind/kafka
+      - hivemind/eureka-server
+
+  - name: user-service
+    namespace: hivemind
+    chart: ../charts/user-service
+    values:
+      - ../environments/{{ .Environment.Name }}/user-service-values.yaml
+    needs:
+      - hivemind/cassandra
+      - hivemind/kafka
+      - hivemind/redis
+      - hivemind/auth-service
+
+  - name: group-service
+    namespace: hivemind
+    chart: ../charts/group-service
+    values:
+      - ../environments/{{ .Environment.Name }}/group-service-values.yaml
+    needs:
+      - hivemind/cassandra
+      - hivemind/kafka
+      - hivemind/redis
+      - hivemind/user-service
+
+  - name: post-service
+    namespace: hivemind
+    chart: ../charts/post-service
+    values:
+      - ../environments/{{ .Environment.Name }}/post-service-values.yaml
+    needs:
+      - hivemind/cassandra
+      - hivemind/kafka
+      - hivemind/redis
+      - hivemind/user-service
+
+  - name: meeting-service
+    namespace: hivemind
+    chart: ../charts/meeting-service
+    values:
+      - ../environments/{{ .Environment.Name }}/meeting-service-values.yaml
+    needs:
+      - hivemind/cassandra
+      - hivemind/kafka
+      - hivemind/redis
+
+  - name: notification-service
+    namespace: hivemind
+    chart: ../charts/notification-service
+    values:
+      - ../environments/{{ .Environment.Name }}/notification-service-values.yaml
+    needs:
+      - hivemind/kafka
+      - hivemind/mongodb
+
+  - name: media-service
+    namespace: hivemind
+    chart: ../charts/media-service
+    values:
+      - ../environments/{{ .Environment.Name }}/media-service-values.yaml
+    needs:
+      - hivemind/postgresql
+
+  - name: api-gateway
+    namespace: hivemind
+    chart: ../charts/api-gateway
+    values:
+      - ../environments/{{ .Environment.Name }}/api-gateway-values.yaml
+    needs:
+      - hivemind/auth-service
+      - hivemind/user-service
+      - hivemind/group-service
+      - hivemind/post-service
+      - hivemind/meeting-service
+      - hivemind/notification-service
+      - hivemind/media-service
+
+  - name: frontend
+    namespace: hivemind
+    chart: ../charts/frontend
+    values:
+      - ../environments/{{ .Environment.Name }}/frontend-values.yaml
+    needs:
+      - hivemind/api-gateway

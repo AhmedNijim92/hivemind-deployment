@@ -1,0 +1,8 @@
+replicaCount: 1
+
+image:
+  tag: "latest"
+
+env:
+  SPRING_PROFILES_ACTIVE: "staging"
+

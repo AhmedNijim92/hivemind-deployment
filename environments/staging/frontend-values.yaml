@@ -1,0 +1,22 @@
+replicaCount: 2
+
+image:
+  repository: hivemind/frontend
+  tag: latest
+
+env:
+  NEXT_PUBLIC_API_URL: "https://api-staging.hivemind.example.com"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 75

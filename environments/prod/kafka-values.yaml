@@ -1,0 +1,18 @@
+# Bitnami Kafka chart overrides for dev
+replicaCount: 2
+
+persistence:
+  enabled: true
+  size: 8Gi
+
+zookeeper:
+  replicaCount: 2
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
+

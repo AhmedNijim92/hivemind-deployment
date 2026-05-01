@@ -1,0 +1,23 @@
+helmfiles:
+  - helmfile.d/00-infrastructure.yaml
+  - helmfile.d/01-platform.yaml
+  - helmfile.d/02-services.yaml
+  - helmfile.d/03-monitoring.yaml
+
+environments:
+  dev:
+    values:
+      - environments/dev/values.yaml
+  staging:
+    values:
+      - environments/staging/values.yaml
+  prod:
+    values:
+      - environments/prod/values.yaml
+
+helmDefaults:
+  wait: true
+  timeout: 600
+  recreatePods: false
+  force: false
+  atomic: true

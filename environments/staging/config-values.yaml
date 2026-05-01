@@ -1,0 +1,10 @@
+replicaCount: 1
+
+image:
+  tag: "latest"
+
+env:
+  SPRING_PROFILES_ACTIVE: "staging"
+  EUREKA_SERVER: "http://eureka-server:8761/eureka"
+  CONFIG_GIT_URI: "https://github.com/your-org/hivemind-config"
+

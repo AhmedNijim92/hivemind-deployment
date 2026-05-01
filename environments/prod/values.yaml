@@ -1,0 +1,57 @@
+global:
+  domain: api.hivemind.com
+  imageRegistry: docker.io/hivemind
+  imageTag: v1.0.0
+  storageClass: fast-ssd
+
+cassandra:
+  replicaCount: 3
+  password: CHANGE_ME
+
+kafka:
+  replicaCount: 3
+
+redis:
+  password: CHANGE_ME
+
+mongodb:
+  replicaCount: 3
+
+postgresql:
+  replicaCount: 1
+
+services:
+  auth:
+    replicaCount: 5
+    resources:
+      requests:
+        memory: 1Gi
+        cpu: 1
+      limits:
+        memory: 2Gi
+        cpu: 2
+  
+  user:
+    replicaCount: 5
+    resources:
+      requests:
+        memory: 1Gi
+        cpu: 1
+  
+  group:
+    replicaCount: 3
+  
+  post:
+    replicaCount: 5
+  
+  meeting:
+    replicaCount: 3
+  
+  notification:
+    replicaCount: 3
+  
+  media:
+    replicaCount: 3
+  
+  gateway:
+    replicaCount: 5

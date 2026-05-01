@@ -1,0 +1,9 @@
+architecture: standalone
+
+auth:
+  enabled: true
+  rootPassword: "staging-mongo-password"
+
+persistence:
+  enabled: true
+  size: 8Gi

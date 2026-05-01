@@ -1,0 +1,11 @@
+architecture: replicaset
+replicaCount: 3
+
+auth:
+  enabled: true
+  rootPassword: "CHANGE_ME_MONGO_PASSWORD"
+
+persistence:
+  enabled: true
+  size: 50Gi
+  storageClass: fast-ssd

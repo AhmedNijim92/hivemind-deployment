@@ -1,0 +1,29 @@
+replicaCount: 1
+
+image:
+  repository: hivemind/config-server
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8888
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "250m"
+
+env:
+  SPRING_PROFILES_ACTIVE: "prod"
+  EUREKA_SERVER: "http://eureka-server:8761/eureka"
+  CONFIG_GIT_URI: "https://github.com/your-org/hivemind-config"
+
+hpa:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUtilizationPercentage: 80

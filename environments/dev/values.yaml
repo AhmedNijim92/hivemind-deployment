@@ -1,0 +1,57 @@
+global:
+  domain: dev.hivemind.local
+  imageRegistry: docker.io/hivemind
+  imageTag: latest
+  storageClass: standard
+
+cassandra:
+  replicaCount: 1
+  password: dev-password
+
+kafka:
+  replicaCount: 1
+
+redis:
+  password: dev-redis-password
+
+mongodb:
+  replicaCount: 1
+
+postgresql:
+  replicaCount: 1
+
+services:
+  auth:
+    replicaCount: 1
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 250m
+      limits:
+        memory: 1Gi
+        cpu: 500m
+  
+  user:
+    replicaCount: 1
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 250m
+  
+  group:
+    replicaCount: 1
+  
+  post:
+    replicaCount: 1
+  
+  meeting:
+    replicaCount: 1
+  
+  notification:
+    replicaCount: 1
+  
+  media:
+    replicaCount: 1
+  
+  gateway:
+    replicaCount: 1

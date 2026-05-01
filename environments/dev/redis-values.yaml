@@ -1,0 +1,14 @@
+# Bitnami Redis chart overrides for dev
+architecture: standalone
+
+master:
+  persistence:
+    enabled: true
+    size: 4Gi
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"

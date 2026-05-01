@@ -1,0 +1,16 @@
+replicaCount: 1
+
+image:
+  tag: "latest"
+
+env:
+  SPRING_PROFILES_ACTIVE: "dev"
+  EUREKA_SERVER: "http://eureka-server:8761/eureka"
+  DB_USERNAME: "postgres"
+  AWS_REGION: "us-east-1"
+  S3_BUCKET: "hivemind-media-dev"
+
+secrets:
+  DB_PASSWORD: "dev-postgres-password"
+  AWS_ACCESS_KEY: "dev-aws-key"
+  AWS_SECRET_KEY: "dev-aws-secret"

@@ -1,0 +1,36 @@
+replicaCount: 2
+
+image:
+  repository: hivemind/frontend
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 3000
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  NEXT_PUBLIC_API_URL: "http://api-gateway:8080"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+ingress:
+  enabled: false
+  className: nginx
+  hosts:
+    - host: hivemind.example.com
+      paths:
+        - path: /
+          pathType: Prefix

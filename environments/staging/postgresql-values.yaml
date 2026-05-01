@@ -1,0 +1,8 @@
+auth:
+  postgresPassword: "staging-postgres-password"
+  database: "media_db"
+
+primary:
+  persistence:
+    enabled: true
+    size: 8Gi

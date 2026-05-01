@@ -1,0 +1,5 @@
+apiVersion: v2
+name: eureka-server
+description: HiveMind Service Discovery - Netflix Eureka
+version: 1.0.0
+appVersion: "1.0.0"

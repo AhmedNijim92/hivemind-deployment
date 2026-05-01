@@ -1,0 +1,5 @@
+apiVersion: v2
+name: api-gateway
+description: HiveMind API Gateway - Spring Cloud Gateway + JWT
+version: 1.0.0
+appVersion: "1.0.0"

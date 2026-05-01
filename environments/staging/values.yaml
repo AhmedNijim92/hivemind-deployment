@@ -1,0 +1,40 @@
+global:
+  domain: staging.hivemind.io
+  imageRegistry: docker.io/hivemind
+  imageTag: "latest"
+  storageClass: standard
+
+cassandra:
+  replicaCount: 1
+  password: staging-cassandra-password
+
+kafka:
+  replicaCount: 1
+
+redis:
+  password: staging-redis-password
+
+services:
+  auth:
+    replicaCount: 2
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+  user:
+    replicaCount: 2
+  group:
+    replicaCount: 2
+  post:
+    replicaCount: 2
+  meeting:
+    replicaCount: 2
+  notification:
+    replicaCount: 2
+  media:
+    replicaCount: 2
+  gateway:
+    replicaCount: 2

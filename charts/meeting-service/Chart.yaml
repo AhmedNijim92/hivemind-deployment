@@ -1,0 +1,5 @@
+apiVersion: v2
+name: meeting-service
+description: HiveMind Meeting Service - Cassandra + Redis + Kafka + WebSocket
+version: 1.0.0
+appVersion: "1.0.0"

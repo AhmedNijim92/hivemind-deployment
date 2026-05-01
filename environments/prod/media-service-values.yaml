@@ -1,0 +1,17 @@
+replicaCount: 2
+
+image:
+  tag: "v1.0.0"
+
+env:
+  SPRING_PROFILES_ACTIVE: "prod"
+  EUREKA_SERVER: "http://eureka-server:8761/eureka"
+  DB_USERNAME: "postgres"
+  AWS_REGION: "us-east-1"
+  S3_BUCKET: "hivemind-media-prod"
+
+secrets:
+  DB_PASSWORD: "CHANGE_ME_DB_PASSWORD"
+  AWS_ACCESS_KEY: "CHANGE_ME_AWS_KEY"
+  AWS_SECRET_KEY: "CHANGE_ME_AWS_SECRET"
+

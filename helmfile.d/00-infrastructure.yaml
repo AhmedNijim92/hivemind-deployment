@@ -1,0 +1,53 @@
+repositories:
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+
+releases:
+  - name: cassandra
+    namespace: hivemind
+    chart: bitnami/cassandra
+    version: 10.7.0
+    values:
+      - ../environments/{{ .Environment.Name }}/cassandra-values.yaml
+    set:
+      - name: cluster.replicaCount
+        value: {{ .Values.cassandra.replicaCount }}
+      - name: dbUser.password
+        value: {{ .Values.cassandra.password }}
+
+  - name: kafka
+    namespace: hivemind
+    chart: bitnami/kafka
+    version: 26.4.3
+    values:
+      - ../environments/{{ .Environment.Name }}/kafka-values.yaml
+    set:
+      - name: replicaCount
+        value: {{ .Values.kafka.replicaCount }}
+
+  - name: redis
+    namespace: hivemind
+    chart: bitnami/redis
+    version: 18.4.0
+    values:
+      - ../environments/{{ .Environment.Name }}/redis-values.yaml
+    set:
+      - name: auth.password
+        value: {{ .Values.redis.password }}
+
+  - name: mongodb
+    namespace: hivemind
+    chart: bitnami/mongodb
+    version: 14.4.0
+    values:
+      - ../environments/{{ .Environment.Name }}/mongodb-values.yaml
+    set:
+      - name: replicaCount
+        value: {{ .Values.mongodb.replicaCount }}
+
+  - name: postgresql
+    namespace: hivemind
+    chart: bitnami/postgresql
+    version: 13.2.0
+    values:
+      - ../environments/{{ .Environment.Name }}/postgresql-values.yaml

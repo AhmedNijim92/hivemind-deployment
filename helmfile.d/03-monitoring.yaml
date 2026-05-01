@@ -1,0 +1,28 @@
+repositories:
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+
+releases:
+  - name: prometheus
+    namespace: hivemind
+    chart: prometheus-community/prometheus
+    version: 25.8.0
+    values:
+      - ../environments/{{ .Environment.Name }}/prometheus-values.yaml
+
+  - name: grafana
+    namespace: hivemind
+    chart: grafana/grafana
+    version: 7.0.8
+    values:
+      - ../environments/{{ .Environment.Name }}/grafana-values.yaml
+    needs:
+      - hivemind/prometheus
+
+  - name: zipkin
+    namespace: hivemind
+    chart: ../charts/zipkin
+    values:
+      - ../environments/{{ .Environment.Name }}/zipkin-values.yaml

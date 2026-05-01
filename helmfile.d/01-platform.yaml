@@ -1,0 +1,14 @@
+releases:
+  - name: eureka-server
+    namespace: hivemind
+    chart: ../charts/eureka-server
+    values:
+      - ../environments/{{ .Environment.Name }}/eureka-values.yaml
+
+  - name: config-server
+    namespace: hivemind
+    chart: ../charts/config-server
+    values:
+      - ../environments/{{ .Environment.Name }}/config-values.yaml
+    needs:
+      - hivemind/eureka-server
