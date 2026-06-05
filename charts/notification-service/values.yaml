@@ -1,4 +1,6 @@
 replicaCount: 2
+revisionHistoryLimit: 5
+terminationGracePeriodSeconds: 30
 
 image:
   repository: hivemind/notification-service
@@ -11,10 +13,10 @@ service:
 
 resources:
   requests:
-    memory: "512Mi"
-    cpu: "250m"
+    memory: "384Mi"
+    cpu: "200m"
   limits:
-    memory: "1Gi"
+    memory: "768Mi"
     cpu: "500m"
 
 env:
@@ -23,8 +25,34 @@ env:
   KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
   MONGODB_URI: "mongodb://mongodb:27017/notifications"
 
+secrets: {}
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automountToken: false
+
 hpa:
   enabled: true
   minReplicas: 2
   maxReplicas: 8
   targetCPUUtilizationPercentage: 70
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+networkPolicy:
+  enabled: true
+
+ingress:
+  enabled: false
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        app: notification-service

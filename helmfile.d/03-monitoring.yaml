@@ -26,3 +26,9 @@ releases:
     chart: ../charts/zipkin
     values:
       - ../environments/{{ .Environment.Name }}/zipkin-values.yaml
+
+  - name: prometheus-rules
+    namespace: hivemind
+    chart: ../charts/prometheus-rules
+    needs:
+      - hivemind/prometheus

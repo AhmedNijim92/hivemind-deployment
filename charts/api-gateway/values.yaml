@@ -1,4 +1,6 @@
 replicaCount: 2
+revisionHistoryLimit: 5
+terminationGracePeriodSeconds: 30
 
 image:
   repository: hivemind/api-gateway
@@ -6,7 +8,7 @@ image:
   pullPolicy: IfNotPresent
 
 service:
-  type: LoadBalancer
+  type: ClusterIP
   port: 8080
 
 resources:
@@ -24,8 +26,47 @@ env:
 secrets:
   JWT_SECRET: ""
 
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automountToken: false
+
 hpa:
   enabled: true
   minReplicas: 2
   maxReplicas: 10
   targetCPUUtilizationPercentage: 70
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+networkPolicy:
+  enabled: true
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: api.hivemind.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: hivemind-api-tls
+      hosts:
+        - api.hivemind.example.com
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        app: api-gateway

@@ -1,0 +1,4 @@
+releases:
+  - name: namespace-setup
+    namespace: hivemind
+    chart: ../charts/namespace-setup

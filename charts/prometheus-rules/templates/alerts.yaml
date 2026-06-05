@@ -1,0 +1,117 @@
+{{- if .Values.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: hivemind-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/part-of: hivemind
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: hivemind.pod.alerts
+      rules:
+        - alert: PodCrashLooping
+          expr: rate(kube_pod_container_status_restarts_total{namespace="hivemind"}[15m]) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ $labels.pod }} is crash looping"
+            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is restarting frequently."
+
+        - alert: PodNotReady
+          expr: kube_pod_status_ready{namespace="hivemind", condition="true"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} is not ready"
+            description: "Pod {{ $labels.pod }} has been in a non-ready state for more than 5 minutes."
+
+        - alert: HighPodMemoryUsage
+          expr: container_memory_working_set_bytes{namespace="hivemind"} / container_spec_memory_limit_bytes{namespace="hivemind"} > 0.85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High memory usage in {{ $labels.pod }}"
+            description: "Pod {{ $labels.pod }} is using more than 85% of its memory limit."
+
+        - alert: HighPodCPUUsage
+          expr: rate(container_cpu_usage_seconds_total{namespace="hivemind"}[5m]) / container_spec_cpu_quota{namespace="hivemind"} * 100000 > 80
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High CPU usage in {{ $labels.pod }}"
+            description: "Pod {{ $labels.pod }} is using more than 80% of its CPU limit for 10 minutes."
+
+    - name: hivemind.service.alerts
+      rules:
+        - alert: ServiceDown
+          expr: up{namespace="hivemind"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Service {{ $labels.job }} is down"
+            description: "Service {{ $labels.job }} has been down for more than 2 minutes."
+
+        - alert: HighErrorRate
+          expr: rate(http_server_requests_seconds_count{namespace="hivemind", status=~"5.."}[5m]) / rate(http_server_requests_seconds_count{namespace="hivemind"}[5m]) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "High error rate on {{ $labels.service }}"
+            description: "Service {{ $labels.service }} has more than 5% error rate."
+
+        - alert: HighResponseLatency
+          expr: histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{namespace="hivemind"}[5m])) > 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High latency on {{ $labels.service }}"
+            description: "95th percentile latency is above 2 seconds for {{ $labels.service }}."
+
+    - name: hivemind.infrastructure.alerts
+      rules:
+        - alert: KafkaConsumerLag
+          expr: kafka_consumer_group_lag{namespace="hivemind"} > 1000
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Kafka consumer lag is high"
+            description: "Consumer group {{ $labels.group }} has a lag of {{ $value }} on topic {{ $labels.topic }}."
+
+        - alert: CassandraDown
+          expr: up{job="cassandra", namespace="hivemind"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Cassandra is down"
+            description: "Cassandra instance has been down for more than 1 minute."
+
+        - alert: RedisDown
+          expr: up{job="redis", namespace="hivemind"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Redis is down"
+            description: "Redis instance has been unreachable for more than 1 minute."
+
+        - alert: PVCAlmostFull
+          expr: kubelet_volume_stats_used_bytes{namespace="hivemind"} / kubelet_volume_stats_capacity_bytes{namespace="hivemind"} > 0.85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PVC {{ $labels.persistentvolumeclaim }} is almost full"
+            description: "PVC is using more than 85% of its capacity."
+{{- end }}

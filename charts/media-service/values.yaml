@@ -1,4 +1,6 @@
 replicaCount: 2
+revisionHistoryLimit: 5
+terminationGracePeriodSeconds: 30
 
 image:
   repository: hivemind/media-service
@@ -20,17 +22,41 @@ resources:
 env:
   SPRING_PROFILES_ACTIVE: "prod"
   EUREKA_SERVER: "http://eureka-server:8761/eureka"
+  DB_HOST: "postgresql"
+  DB_PORT: "5432"
   DB_USERNAME: "postgres"
-  AWS_REGION: "us-east-1"
-  S3_BUCKET: "hivemind-media"
 
 secrets:
   DB_PASSWORD: ""
   AWS_ACCESS_KEY: ""
   AWS_SECRET_KEY: ""
 
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automountToken: false
+
 hpa:
   enabled: true
   minReplicas: 2
   maxReplicas: 8
   targetCPUUtilizationPercentage: 70
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+networkPolicy:
+  enabled: true
+
+ingress:
+  enabled: false
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        app: media-service

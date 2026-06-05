@@ -1,4 +1,5 @@
 helmfiles:
+  - helmfile.d/00-namespace.yaml
   - helmfile.d/00-infrastructure.yaml
   - helmfile.d/01-platform.yaml
   - helmfile.d/02-services.yaml

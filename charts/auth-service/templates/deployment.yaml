@@ -7,58 +7,82 @@ metadata:
     {{- include "service.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 5 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
-      app: {{ include "service.name" . }}
+      {{- include "service.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "service.labels" . | nindent 8 }}
+        {{- include "service.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
     spec:
+      serviceAccountName: {{ include "service.serviceAccountName" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 30 }}
       containers:
         - name: {{ include "service.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
           ports:
-            - containerPort: {{ .Values.service.port }}
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
           env:
             {{- range $key, $value := .Values.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
-            - name: JWT_SECRET
+            {{- range $key, $value := .Values.secrets }}
+            - name: {{ $key }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "service.name" . }}-secrets
-                  key: JWT_SECRET
-            - name: TWILIO_ACCOUNT_SID
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "service.name" . }}-secrets
-                  key: TWILIO_ACCOUNT_SID
-            - name: TWILIO_AUTH_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "service.name" . }}-secrets
-                  key: TWILIO_AUTH_TOKEN
-            - name: TWILIO_PHONE_NUMBER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "service.name" . }}-secrets
-                  key: TWILIO_PHONE_NUMBER
+                  name: {{ include "service.name" $ }}-secrets
+                  key: {{ $key }}
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 20
+            timeoutSeconds: 3
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
-              port: {{ .Values.service.port }}
-            initialDelaySeconds: 60
+              port: http
+            initialDelaySeconds: 0
             periodSeconds: 30
             failureThreshold: 3
+            timeoutSeconds: 3
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
-              port: {{ .Values.service.port }}
-            initialDelaySeconds: 30
+              port: http
+            initialDelaySeconds: 0
             periodSeconds: 10
             failureThreshold: 3
+            timeoutSeconds: 3
