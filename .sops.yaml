@@ -1,9 +1,0 @@
-creation_rules:
-  - path_regex: environments/prod/.*\.yaml
-    age: age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p
-  
-  - path_regex: environments/staging/.*\.yaml
-    age: age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p
-  
-  - path_regex: environments/dev/.*\.yaml
-    age: age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p

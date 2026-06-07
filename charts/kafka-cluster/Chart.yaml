@@ -1,0 +1,5 @@
+apiVersion: v2
+name: kafka-cluster
+description: Strimzi Kafka cluster CR for HiveMind
+version: 1.0.0
+appVersion: "3.9.0"

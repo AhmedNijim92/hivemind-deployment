@@ -1,0 +1,5 @@
+className: nginx
+frontendService: frontend-frontend
+frontendPort: 3000
+gatewayService: api-gateway
+gatewayPort: 8080

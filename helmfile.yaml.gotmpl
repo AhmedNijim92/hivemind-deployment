@@ -1,0 +1,510 @@
+environments:
+  dev:
+    values:
+      - environments/dev/values.yaml
+  staging:
+    values:
+      - environments/staging/values.yaml
+  prod:
+    values:
+      - environments/prod/values.yaml
+
+helmDefaults:
+  wait: true
+  timeout: 600
+  createNamespace: true
+
+repositories:
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+
+---
+
+releases:
+  # ═══════════════════════════════════════════════════════════════
+  # INFRASTRUCTURE — Databases & Messaging
+  # ═══════════════════════════════════════════════════════════════
+
+  - name: cassandra-cluster
+    namespace: hivemind
+    chart: ./charts/cassandra-cluster
+
+  - name: kafka-cluster
+    namespace: hivemind
+    chart: ./charts/kafka-cluster
+
+  - name: redis
+    namespace: hivemind
+    chart: bitnami/redis
+    version: 25.5.3
+    set:
+      - name: auth.password
+        value: "{{ .Values | get "redis.password" "dev-redis-password" }}"
+      - name: architecture
+        value: "standalone"
+      - name: master.resources.requests.memory
+        value: "128Mi"
+      - name: master.resources.requests.cpu
+        value: "100m"
+      - name: master.persistence.size
+        value: "1Gi"
+
+  - name: mongodb
+    namespace: hivemind
+    chart: bitnami/mongodb
+    version: 19.1.0
+    set:
+      - name: replicaCount
+        value: "{{ .Values | get "mongodb.replicaCount" "1" }}"
+      - name: resources.requests.memory
+        value: "256Mi"
+      - name: resources.requests.cpu
+        value: "100m"
+      - name: auth.enabled
+        value: "false"
+      - name: persistence.size
+        value: "1Gi"
+
+  - name: postgresql
+    namespace: hivemind
+    chart: bitnami/postgresql
+    version: 18.7.0
+    set:
+      - name: auth.postgresPassword
+        value: "postgres"
+      - name: auth.database
+        value: "media_db"
+      - name: primary.resources.requests.memory
+        value: "128Mi"
+      - name: primary.resources.requests.cpu
+        value: "100m"
+      - name: primary.persistence.size
+        value: "1Gi"
+
+  # ═══════════════════════════════════════════════════════════════
+  # PLATFORM — Service Discovery & Config
+  # ═══════════════════════════════════════════════════════════════
+
+  - name: eureka-server
+    namespace: hivemind
+    chart: ./charts/eureka-server
+    needs:
+      - hivemind/cassandra-cluster
+      - hivemind/kafka-cluster
+      - hivemind/redis
+      - hivemind/mongodb
+      - hivemind/postgresql
+    set:
+      - name: image.repository
+        value: "ahmednijim92/hivemind-eureka-server"
+      - name: image.tag
+        value: "latest"
+      - name: image.pullPolicy
+        value: "Always"
+      - name: replicaCount
+        value: "1"
+      - name: service.port
+        value: "8761"
+      - name: serviceAccount.create
+        value: "false"
+      - name: pdb.enabled
+        value: "false"
+      - name: networkPolicy.enabled
+        value: "false"
+      - name: hpa.enabled
+        value: "false"
+      - name: topologySpreadConstraints
+        value: "null"
+
+  - name: config-server
+    namespace: hivemind
+    chart: ./charts/config-server
+    needs:
+      - hivemind/eureka-server
+    set:
+      - name: image.repository
+        value: "ahmednijim92/hivemind-config-server"
+      - name: image.tag
+        value: "latest"
+      - name: image.pullPolicy
+        value: "Always"
+      - name: replicaCount
+        value: "1"
+      - name: service.port
+        value: "8888"
+      - name: serviceAccount.create
+        value: "false"
+      - name: pdb.enabled
+        value: "false"
+      - name: networkPolicy.enabled
+        value: "false"
+      - name: hpa.enabled
+        value: "false"
+      - name: topologySpreadConstraints
+        value: "null"
+      - name: env.SPRING_PROFILES_ACTIVE
+        value: "native"
+      - name: env.EUREKA_SERVER
+        value: "http://eureka-server:8761/eureka"
+      - name: secrets
+        value: "null"
+
+  # ═══════════════════════════════════════════════════════════════
+  # DOMAIN SERVICES
+  # ═══════════════════════════════════════════════════════════════
+
+  - name: auth-service
+    namespace: hivemind
+    chart: ./charts/auth-service
+    needs:
+      - hivemind/eureka-server
+      - hivemind/cassandra-cluster
+      - hivemind/kafka-cluster
+      - hivemind/redis
+    set:
+      - name: image.repository
+        value: "ahmednijim92/hivemind-auth-service"
+      - name: image.tag
+        value: "latest"
+      - name: image.pullPolicy
+        value: "Always"
+      - name: replicaCount
+        value: "1"
+      - name: serviceAccount.create
+        value: "false"
+      - name: pdb.enabled
+        value: "false"
+      - name: networkPolicy.enabled
+        value: "false"
+      - name: hpa.enabled
+        value: "false"
+      - name: topologySpreadConstraints
+        value: "null"
+      - name: env.JWT_SECRET
+        value: "3kRjUdqgxIuZCeEdiX6q7kTsgtOkC75o4D5czNbTV9A="
+      - name: env.EUREKA_SERVER
+        value: "http://eureka-server:8761/eureka"
+      - name: env.CASSANDRA_HOST
+        value: "cassandra"
+      - name: env.KAFKA_BOOTSTRAP_SERVERS
+        value: "kafka:9092"
+      - name: env.SPRING_PROFILES_ACTIVE
+        value: "dev"
+      - name: secrets
+        value: "null"
+
+  - name: user-service
+    namespace: hivemind
+    chart: ./charts/user-service
+    needs:
+      - hivemind/auth-service
+      - hivemind/cassandra-cluster
+      - hivemind/kafka-cluster
+      - hivemind/redis
+    set:
+      - name: image.repository
+        value: "ahmednijim92/hivemind-user-service"
+      - name: image.tag
+        value: "latest"
+      - name: image.pullPolicy
+        value: "Always"
+      - name: replicaCount
+        value: "1"
+      - name: serviceAccount.create
+        value: "false"
+      - name: pdb.enabled
+        value: "false"
+      - name: networkPolicy.enabled
+        value: "false"
+      - name: hpa.enabled
+        value: "false"
+      - name: topologySpreadConstraints
+        value: "null"
+      - name: env.REDIS_HOST
+        value: "redis-master"
+      - name: env.SPRING_DATA_REDIS_PASSWORD
+        value: "dev-redis-password"
+      - name: env.CASSANDRA_HOST
+        value: "cassandra"
+      - name: env.KAFKA_BOOTSTRAP_SERVERS
+        value: "kafka:9092"
+      - name: env.EUREKA_SERVER
+        value: "http://eureka-server:8761/eureka"
+      - name: secrets
+        value: "null"
+
+  - name: group-service
+    namespace: hivemind
+    chart: ./charts/group-service
+    needs:
+      - hivemind/auth-service
+      - hivemind/cassandra-cluster
+      - hivemind/kafka-cluster
+      - hivemind/redis
+    set:
+      - name: image.repository
+        value: "ahmednijim92/hivemind-group-service"
+      - name: image.tag
+        value: "latest"
+      - name: image.pullPolicy
+        value: "Always"
+      - name: replicaCount
+        value: "1"
+      - name: serviceAccount.create
+        value: "false"
+      - name: pdb.enabled
+        value: "false"
+      - name: networkPolicy.enabled
+        value: "false"
+      - name: hpa.enabled
+        value: "false"
+      - name: topologySpreadConstraints
+        value: "null"
+      - name: env.REDIS_HOST
+        value: "redis-master"
+      - name: env.SPRING_DATA_REDIS_PASSWORD
+        value: "dev-redis-password"
+      - name: env.CASSANDRA_HOST
+        value: "cassandra"
+      - name: env.KAFKA_BOOTSTRAP_SERVERS
+        value: "kafka:9092"
+      - name: env.EUREKA_SERVER
+        value: "http://eureka-server:8761/eureka"
+      - name: secrets
+        value: "null"
+
+  - name: post-service
+    namespace: hivemind
+    chart: ./charts/post-service
+    needs:
+      - hivemind/auth-service
+      - hivemind/cassandra-cluster
+      - hivemind/kafka-cluster
+      - hivemind/redis
+    set:
+      - name: image.repository
+        value: "ahmednijim92/hivemind-post-service"
+      - name: image.tag
+        value: "latest"
+      - name: image.pullPolicy
+        value: "Always"
+      - name: replicaCount
+        value: "1"
+      - name: serviceAccount.create
+        value: "false"
+      - name: pdb.enabled
+        value: "false"
+      - name: networkPolicy.enabled
+        value: "false"
+      - name: hpa.enabled
+        value: "false"
+      - name: topologySpreadConstraints
+        value: "null"
+      - name: env.REDIS_HOST
+        value: "redis-master"
+      - name: env.SPRING_DATA_REDIS_PASSWORD
+        value: "dev-redis-password"
+      - name: env.CASSANDRA_HOST
+        value: "cassandra"
+      - name: env.KAFKA_BOOTSTRAP_SERVERS
+        value: "kafka:9092"
+      - name: env.EUREKA_SERVER
+        value: "http://eureka-server:8761/eureka"
+      - name: secrets
+        value: "null"
+
+  - name: meeting-service
+    namespace: hivemind
+    chart: ./charts/meeting-service
+    needs:
+      - hivemind/auth-service
+      - hivemind/cassandra-cluster
+      - hivemind/kafka-cluster
+      - hivemind/redis
+    set:
+      - name: image.repository
+        value: "ahmednijim92/hivemind-meeting-service"
+      - name: image.tag
+        value: "latest"
+      - name: image.pullPolicy
+        value: "Always"
+      - name: replicaCount
+        value: "1"
+      - name: serviceAccount.create
+        value: "false"
+      - name: pdb.enabled
+        value: "false"
+      - name: networkPolicy.enabled
+        value: "false"
+      - name: hpa.enabled
+        value: "false"
+      - name: topologySpreadConstraints
+        value: "null"
+      - name: env.REDIS_HOST
+        value: "redis-master"
+      - name: env.SPRING_DATA_REDIS_PASSWORD
+        value: "dev-redis-password"
+      - name: env.CASSANDRA_HOST
+        value: "cassandra"
+      - name: env.KAFKA_BOOTSTRAP_SERVERS
+        value: "kafka:9092"
+      - name: env.EUREKA_SERVER
+        value: "http://eureka-server:8761/eureka"
+      - name: secrets
+        value: "null"
+
+  - name: notification-service
+    namespace: hivemind
+    chart: ./charts/notification-service
+    needs:
+      - hivemind/mongodb
+      - hivemind/kafka-cluster
+    set:
+      - name: image.repository
+        value: "ahmednijim92/hivemind-notification-service"
+      - name: image.tag
+        value: "latest"
+      - name: image.pullPolicy
+        value: "Always"
+      - name: replicaCount
+        value: "1"
+      - name: serviceAccount.create
+        value: "false"
+      - name: pdb.enabled
+        value: "false"
+      - name: networkPolicy.enabled
+        value: "false"
+      - name: hpa.enabled
+        value: "false"
+      - name: topologySpreadConstraints
+        value: "null"
+      - name: env.KAFKA_BOOTSTRAP_SERVERS
+        value: "kafka:9092"
+      - name: env.MONGODB_URI
+        value: "mongodb://mongodb:27017/notifications"
+      - name: env.EUREKA_SERVER
+        value: "http://eureka-server:8761/eureka"
+      - name: secrets
+        value: "null"
+
+  - name: media-service
+    namespace: hivemind
+    chart: ./charts/media-service
+    needs:
+      - hivemind/postgresql
+    set:
+      - name: image.repository
+        value: "ahmednijim92/hivemind-media-service"
+      - name: image.tag
+        value: "latest"
+      - name: image.pullPolicy
+        value: "Always"
+      - name: replicaCount
+        value: "1"
+      - name: serviceAccount.create
+        value: "false"
+      - name: pdb.enabled
+        value: "false"
+      - name: networkPolicy.enabled
+        value: "false"
+      - name: hpa.enabled
+        value: "false"
+      - name: topologySpreadConstraints
+        value: "null"
+      - name: env.DB_HOST
+        value: "postgresql"
+      - name: env.DB_PORT
+        value: "5432"
+      - name: env.DB_USERNAME
+        value: "postgres"
+      - name: env.DB_PASSWORD
+        value: "postgres"
+      - name: env.EUREKA_SERVER
+        value: "http://eureka-server:8761/eureka"
+      - name: env.SPRING_PROFILES_ACTIVE
+        value: "docker"
+      - name: secrets
+        value: "null"
+
+  - name: api-gateway
+    namespace: hivemind
+    chart: ./charts/api-gateway
+    needs:
+      - hivemind/auth-service
+      - hivemind/user-service
+      - hivemind/group-service
+      - hivemind/post-service
+      - hivemind/meeting-service
+      - hivemind/notification-service
+      - hivemind/media-service
+    set:
+      - name: image.repository
+        value: "ahmednijim92/hivemind-api-gateway"
+      - name: image.tag
+        value: "latest"
+      - name: image.pullPolicy
+        value: "Always"
+      - name: replicaCount
+        value: "1"
+      - name: service.type
+        value: "ClusterIP"
+      - name: serviceAccount.create
+        value: "false"
+      - name: pdb.enabled
+        value: "false"
+      - name: networkPolicy.enabled
+        value: "false"
+      - name: hpa.enabled
+        value: "false"
+      - name: topologySpreadConstraints
+        value: "null"
+      - name: env.EUREKA_SERVER
+        value: "http://eureka-server:8761/eureka"
+      - name: env.SPRING_PROFILES_ACTIVE
+        value: "docker"
+      - name: env.SPRING_DATA_REDIS_HOST
+        value: "redis-master"
+      - name: env.SPRING_DATA_REDIS_PORT
+        value: "6379"
+      - name: env.SPRING_DATA_REDIS_PASSWORD
+        value: "dev-redis-password"
+      - name: env.JWT_SECRET
+        value: "3kRjUdqgxIuZCeEdiX6q7kTsgtOkC75o4D5czNbTV9A="
+      - name: env.CORS_ALLOWED_ORIGINS
+        value: "*"
+      - name: secrets
+        value: "null"
+
+  # ═══════════════════════════════════════════════════════════════
+  # FRONTEND
+  # ═══════════════════════════════════════════════════════════════
+
+  - name: frontend
+    namespace: hivemind
+    chart: ./charts/frontend
+    needs:
+      - hivemind/api-gateway
+    set:
+      - name: image.repository
+        value: "ahmednijim92/hivemind-frontend"
+      - name: image.tag
+        value: "latest"
+      - name: image.pullPolicy
+        value: "Always"
+      - name: replicaCount
+        value: "1"
+      - name: pdb.enabled
+        value: "false"
+      - name: env.NEXT_PUBLIC_API_URL
+        value: ""
+
+  # ═══════════════════════════════════════════════════════════════
+  # INGRESS (nginx) — single entry point, no port-forwards needed
+  # ═══════════════════════════════════════════════════════════════
+
+  - name: hivemind-ingress
+    namespace: hivemind
+    chart: ./charts/ingress
+    needs:
+      - hivemind/frontend
+      - hivemind/api-gateway
