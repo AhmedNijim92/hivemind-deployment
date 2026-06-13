@@ -18,7 +18,10 @@ resources:
     memory: 512Mi
 
 env:
-  NEXT_PUBLIC_API_URL: "http://api-gateway:8080"
+  # Public API URL exposed to the browser. Leave empty to use same-origin proxy (recommended).
+  NEXT_PUBLIC_API_URL: ""
+  # Internal gateway URL used by Next.js server-side rewrites (cluster-internal).
+  API_GATEWAY_INTERNAL_URL: "http://api-gateway:8080"
 
 autoscaling:
   enabled: true

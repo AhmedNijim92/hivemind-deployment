@@ -24,6 +24,8 @@ spec:
           env:
             - name: NEXT_PUBLIC_API_URL
               value: {{ .Values.env.NEXT_PUBLIC_API_URL | quote }}
+            - name: API_GATEWAY_INTERNAL_URL
+              value: {{ .Values.env.API_GATEWAY_INTERNAL_URL | quote }}
           livenessProbe:
             httpGet:
               path: /
