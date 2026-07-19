@@ -8,12 +8,18 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "{{ .Values.corsOrigin | default "https://hivemind.example.com" }}"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS, PATCH"
     nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,X-User-Id,X-User-Role,X-Request-Id"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
 spec:
   ingressClassName: {{ .Values.className }}
+  {{- if .Values.tls }}
+  tls:
+    - secretName: hivemind-tls
+      hosts:
+        - {{ .Values.domain | default "*" }}
+  {{- end }}
   rules:
     - http:
         paths:

@@ -3,3 +3,6 @@ frontendService: frontend-frontend
 frontendPort: 3000
 gatewayService: api-gateway
 gatewayPort: 8080
+tls: false
+domain: ""
+corsOrigin: "*"
