@@ -3,9 +3,6 @@
 .DS_Store
 *.dec
 
-# SOPS — Never commit unencrypted secrets
-# Only commit secrets.yaml AFTER encrypting with: sops --encrypt --in-place
-# If file has 'sops:' metadata key at bottom, it's encrypted (safe to commit)
-environments/prod/secrets.yaml
-environments/staging/secrets.yaml
+# SOPS — Only commit ENCRYPTED secrets (files with 'sops:' metadata are safe)
+# Unencrypted secrets should never be committed
 *.key

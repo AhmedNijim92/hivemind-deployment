@@ -1,13 +1,5 @@
-# SOPS configuration for HiveMind secrets encryption.
-# Generate an age key: age-keygen -o keys.txt
-# Export public key: SOPS_AGE_KEY_FILE=keys.txt
-# Encrypt: sops --encrypt --in-place environments/prod/secrets.yaml
-# Decrypt: sops --decrypt environments/prod/secrets.yaml
 creation_rules:
   - path_regex: environments/prod/secrets\.yaml$
-    age: >-
-      # Replace with your age public key:
-      # age1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    age: "age1enhnld965kmczdmehvfgv7enk9khh0ygevpaflt2vjv02f3kz9zqq4qy98"
   - path_regex: environments/staging/secrets\.yaml$
-    age: >-
-      # Replace with your age public key
+    age: "age1enhnld965kmczdmehvfgv7enk9khh0ygevpaflt2vjv02f3kz9zqq4qy98"
