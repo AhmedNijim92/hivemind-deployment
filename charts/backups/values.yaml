@@ -1,0 +1,7 @@
+schedule: "0 2 * * *"  # Daily at 2 AM UTC
+retentionDays: 7
+cassandraHost: cassandra
+postgresHost: postgresql
+postgresPassword: postgres
+mongodbHost: mongodb
+storageSize: 5Gi

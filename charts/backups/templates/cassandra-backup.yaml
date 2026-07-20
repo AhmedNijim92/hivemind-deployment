@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cassandra-backup
+  namespace: {{ .Release.Namespace }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: cassandra:4.1
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                  echo "Starting Cassandra snapshot at $TIMESTAMP"
+                  cqlsh {{ .Values.cassandraHost }} -e "DESC KEYSPACES" > /backup/keyspaces_$TIMESTAMP.cql
+                  for ks in auth_keyspace user_keyspace group_keyspace post_keyspace meeting_keyspace; do
+                    cqlsh {{ .Values.cassandraHost }} -e "DESC KEYSPACE $ks" > /backup/${ks}_schema_$TIMESTAMP.cql
+                    echo "Backed up $ks schema"
+                  done
+                  # Clean old backups
+                  find /backup -mtime +{{ .Values.retentionDays }} -delete
+                  echo "Backup complete"
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backup
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: cassandra-backup-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cassandra-backup-pvc
+  namespace: {{ .Release.Namespace }}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: {{ .Values.storageSize }}

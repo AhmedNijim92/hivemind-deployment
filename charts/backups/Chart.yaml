@@ -1,0 +1,4 @@
+apiVersion: v2
+name: hivemind-backups
+description: Database backup CronJobs for HiveMind
+version: 1.0.0
